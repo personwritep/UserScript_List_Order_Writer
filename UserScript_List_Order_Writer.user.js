@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        UserScript List Order Writer
 // @namespace        http://tampermonkey.net/
-// @version        0.2
+// @version        0.3
 // @description        Tampermonkey の登録スクリプトの実効順をリスト一覧表に書込む
 // @author        Personwritep
 // @match        https://blog.ameba.jp/ucs/entry/srventryupdate*
@@ -61,6 +61,33 @@ function main(){
             '36 109C46 102 57 91 64 81L43 81L43 18L30 18z"></path>'+
             '</svg>';
 
+        let sort_SVG=
+            '<svg viewBox="0 0 120 120" style="height: 22px; padding-top: 1px;">'+
+            '<path style="fill: #1976D2;" d="M30 18L29 19.5L28.8 20.1L28.2 21.1L'+
+            '27.8 22L27.4 23L26.6 25L25.8 27L25.4 28L24.6 30L23.8 32L23.4 33L22.6 35L'+
+            '22.2 36L21.4 38L20.6 40L19.8 42L19.4 43L18.6 45L18.2 46L17.4 48L16.6 50L'+
+            '15.8 52L15.4 53L14.7 54.9L14.4 55.9L14.3 56.5L14 58L22 58L22.3 56.5L22.5'+
+            ' 55.9L23.2 54L23.6 53L24.3 51.1L24.6 50.5L25 49L42 49L42.4 50.5L42.7 51.'+
+            '1L43.4 53L43.8 54L44.5 55.9L44.7 56.5L45 58L52 58L51.8 56.5L51.6 55.9L51'+
+            '.3 54.9L50.6 53L50.2 52L49.4 50L48.6 48L47.8 46L47.4 45L46.6 43L46.2 42L'+
+            '45.4 40L44.6 38L43.8 36L43.4 35L42.6 33L42.2 32L41.4 30L40.6 28L40.2 27L'+
+            '39.4 25L38.6 23L38.2 22L37.8 21.1L37.2 20.1L37 19.5L36 18L30 18M78 18L78'+
+            ' 81L57 81L57.8 82.5L58.3 83.1L59.1 84.1L60 85L62 87L64 89L67 92L84 109L8'+
+            '5.5 108.2L86.1 107.7L87.1 106.9L88 106L89 105L91 103L93 101L98 96L105 89'+
+            'L107 87L108 86L109 85L109.9 84.1L110.7 83.1L111.2 82.5L112 81L91 81L91 1'+
+            '8L78 18z"></path>'+
+            '<path style="fill: rgb(255, 255, 255);" d="M33 28L32.6 29.5L32.3 30.1L31'+
+            '.6 32L31.2 33L30.8 34L30 36L29.2 38L28.8 39L28.5 39.9L28.1 41.5L28 43L39'+
+            ' 43L38.9 41.5L38.5 39.9L38.2 39L37.4 37L36.6 35L36.2 34L35.8 33L35 31L34'+
+            '.6 30.1L34.2 29.3L34 28.8L33 28z"></path>'+
+            '<path style="fill: #1976D2;" d="M16 70L16 77L41 77L26 92L22 96L20 9'+
+            '8L18.1 100L17.3 101L16.7 102L16.3 103L16.1 104L16 105.9L16 106.9L16 109L'+
+            '50 109L50 102L25 102L40 87L44 83L46 81L47.9 79L48.7 78L49.3 77L49.7 76L4'+
+            '9.9 75L50 73.1L50 72.1L50 70L16 70z"></path>'+
+            '</svg>';
+
+
+
         let panel=
             '<div id="panel_USS">'+
             '<div class="main_panel">'+
@@ -74,6 +101,7 @@ function main(){
             '<input class="sw1 sw" type="submit" value="File">'+
             '<input class="sw2" type="file">'+
             '<span class="fname"></span>'+
+            '<button class="sw6 sw" type="submit">'+ sort_SVG +'</button>'+
             '<button class="sw3 sw" type="submit">'+ rev_SVG +'</button>'+
             '</div>'+
             '<div class="us_list">'+
@@ -103,6 +131,8 @@ function main(){
             '#panel_USS .sw2 { display: none; } '+
             '#panel_USS .fname { font: normal 16px/24px Meiryo; margin: 0 12px; height: 21px; } '+
             '#panel_USS .sw3 { position: absolute; top: 7px; right: 12px; cursor: pointer; } '+
+            '#panel_USS .sw6 { position: absolute; top: 7px; right: 44px; cursor: pointer; '+
+            'box-shadow: 0 0 0 5px #fff; } '+
             '#panel_USS .sw4 { margin: 0 8px 0 4px; width: auto; padding: 0 4px; cursor: pointer; '+
             'color: #333; } '+
             '#panel_USS .sw5 { margin-left: 4px; vertical-align: -4px; cursor: pointer; } '+
@@ -174,6 +204,15 @@ function main(){
         if(sw3){
             sw3.onclick=()=>{
                 nor_rev(); }}
+
+
+        let sw6=document.querySelector('#panel_USS .sw6');
+        if(sw6){
+            sw6.onclick=(event)=>{
+                if(event.ctrlKey){
+                    check_table(); } //「Ctrl+左Click」：ページの一覧表のスクリプト名のみをリスト表示
+                else{
+                    sort_name(); }}} //「左Click」：リストパネルをスクリプト名でソートする
 
 
         let sw4=document.querySelector('#panel_USS .sw4');
@@ -319,6 +358,14 @@ function main(){
 
 
 
+    function sort_name(){
+        if(raw_list.length>1){
+            raw_list.sort((a, b)=>a[1].localeCompare(b[1]));
+            disp_list(); }}
+
+
+
+
     function nor_rev(){
         if(usl_set==0){
             usl_set=1;
@@ -434,5 +481,48 @@ function main(){
                 panel_USS_r.remove(); }}
 
     } // disp_result()
+
+
+
+
+    function check_table(){
+        let list=document.querySelectorAll('#panel_USS .us_list li');
+        for(let k=0; k<list.length; k++){
+            list[k].style.display='none'; } // リストパネルをデフォルトで非表示とする
+
+
+        let editor_iframe=document.querySelector('.cke_wysiwyg_frame');
+        if(editor_iframe){
+            let iframe_doc=editor_iframe.contentWindow.document;
+            if(iframe_doc){
+                let table=iframe_doc.querySelector('table[id*="ambt"]');
+                if(table){
+                    let rows=table.querySelectorAll('tr');
+
+                    for(let k=2; k<rows.length; k++){
+                        let script_name=rows[k].querySelectorAll('td')[1].textContent;
+                        if(script_name){
+                            for(let i=0; i<raw_list.length; i++){
+                                if(script_name==raw_list[i][1]){ // 元リストにデータがある場合
+                                    list_color(script_name);
+                                    break; }
+                                else{
+                                    if(script_name==raw_list[i][1].replace(/▢|▩/g, '').trim()){
+                                        list_color(script_name);
+                                        break; }}}}}
+
+
+                    function list_color(sc_name){
+                        let list=document.querySelectorAll('#panel_USS .us_list li');
+                        for(let k=0; k<list.length; k++){
+                            let script_name_span=list[k].querySelectorAll('span')[1];
+                            if(script_name_span){
+                                let script_name=script_name_span.textContent;
+                                if(script_name==sc_name){
+                                    list[k].style.display=''; }}}} // 一覧表のスクリプトのみをリスト表示する
+
+                } // if(table)
+
+            }}} // check_table()
 
 } // main()

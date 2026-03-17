@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        UserScript List Order Writer
+// @name        UserScript List Order Writer 🔲
 // @namespace        http://tampermonkey.net/
-// @version        0.3
+// @version        0.4
 // @description        Tampermonkey の登録スクリプトの実効順をリスト一覧表に書込む
 // @author        Personwritep
 // @match        https://blog.ameba.jp/ucs/entry/srventryupdate*
@@ -517,7 +517,7 @@ function main(){
                         for(let k=0; k<list.length; k++){
                             let script_name_span=list[k].querySelectorAll('span')[1];
                             if(script_name_span){
-                                let script_name=script_name_span.textContent;
+                                let script_name=script_name_span.textContent.replace(/▢|▩/g, '').trim();
                                 if(script_name==sc_name){
                                     list[k].style.display=''; }}}} // 一覧表のスクリプトのみをリスト表示する
 

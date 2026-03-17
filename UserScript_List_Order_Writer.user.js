@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        UserScript List Order Writer 🔲
+// @name        UserScript List Order Writer
 // @namespace        http://tampermonkey.net/
 // @version        0.4
 // @description        Tampermonkey の登録スクリプトの実効順をリスト一覧表に書込む

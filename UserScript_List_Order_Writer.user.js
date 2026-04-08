@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        UserScript List Order Writer
 // @namespace        http://tampermonkey.net/
-// @version        0.4
+// @version        0.5
 // @description        Tampermonkey の登録スクリプトの実効順をリスト一覧表に書込む
 // @author        Personwritep
 // @match        https://blog.ameba.jp/ucs/entry/srventryupdate*
@@ -17,33 +17,18 @@ main();
 
 
 function main(){
-
     let raw_list=[]; // リスト表示元の配列
     let refer_name; // 参照バックアップファイル名
     let usl_set=0; //「UserScript List」のコントロール　配列の降順表示：「0」昇順「1」降順
 
     display();
-    disp_last_data();
+    name_search();
     file_read();
-
-
-
-    function disp_last_data(){
-        refer_name=localStorage.getItem('USList_name'); // 参照バックアップファイル名 🔵
-        if(refer_name){
-            let fname=document.querySelector('.file_reader_USS .fname');
-            if(fname){
-                fname.textContent=refer_name; }}
-
-        name_search();
-
-    } // disp_last_data()
-
+    work();
 
 
 
     function display(){
-
         let write_SVG=
             '<svg id="write_in" viewBox="-25 -50 300 300">'+
             '<path style="fill:#333" d="M102 136L72 136C67 136 61 136 58 141C54 148 '+
@@ -87,56 +72,51 @@ function main(){
             '</svg>';
 
 
-
         let panel=
             '<div id="panel_USS">'+
             '<div class="main_panel">'+
             '<div id="search_panel">'+
-            'Script name<input type="text" class="script_name">'+
-            'Reference file<button class="sw4 sw" type="submit">Set</button>'+
-            'Write in<button class="sw5 sw" type="submit">'+ write_SVG +'</button>'+
+            'Script name search<input type="text" class="script_name">'+
+            'Order write in<button class="sw0 sw" type="submit">'+ write_SVG +'</button>'+
+            '<input class="sw1 sw" type="submit" value="✖">'+
             '</div>'+
-
             '<div class="file_reader_USS">'+
-            '<input class="sw1 sw" type="submit" value="File">'+
-            '<input class="sw2" type="file">'+
+            '<input class="sw2 sw" type="submit" value="File">'+
+            '<input class="sw3" type="file">'+
             '<span class="fname"></span>'+
-            '<button class="sw6 sw" type="submit">'+ sort_SVG +'</button>'+
-            '<button class="sw3 sw" type="submit">'+ rev_SVG +'</button>'+
+            '<button class="sw4 sw" type="submit">'+ sort_SVG +'</button>'+
+            '<button class="sw5 sw" type="submit">'+ rev_SVG +'</button>'+
             '</div>'+
             '<div class="us_list">'+
             '<ul></ul>'+
-            '</div></div></div>'+
+            '</div></div>'+
 
             '<style>'+
             '#panel_USS { font: 16px Meiryo; color: #666; box-sizing: border-box; '+
             'position: absolute; top: 91px; right: 0; z-index: 40; } '+
-
             '#panel_USS .main_panel { display: flex; flex-direction: column; width: fit-content; '+
             'padding: 8px 10px; background: #a2c0ce; } '+
-
             '#search_panel * { font: normal 16px Meiryo; } '+
             '#search_panel { Meiryo; padding: 6px 12px; color: #fff; background: #333; '+
             'white-space: nowrap; } '+
-            '.script_name { width: 49px; height: 20px; padding: 2px 6px 0; margin: 0 8px 0 4px; '+
+
+            '.script_name { width: 49px; height: 20px; padding: 2px 6px 0; margin: 0 13px 0 4px; '+
             'color: #333; } '+
             '.script_name:focus-visible { outline: 1px solid #4FC3F7; } '+
-
-            '.file_reader_USS { position: relative; z-index: 1; display: flex; align-items: center; '+
-            'padding: 0 15px; height: 40px; margin-bottom: 6px; color: #000; background: #fff; } '+
-
             '#panel_USS .sw { font: normal 16px/27px Meiryo; width: 26px; height: 26px; '+
             'padding: 0; border: 1px solid #aaa; border-radius: 2px; } '+
-            '#panel_USS .sw1 { height: 26px; width: 38px; cursor: pointer; } '+
-            '#panel_USS .sw2 { display: none; } '+
-            '#panel_USS .fname { font: normal 16px/24px Meiryo; margin: 0 12px; height: 21px; } '+
-            '#panel_USS .sw3 { position: absolute; top: 7px; right: 12px; cursor: pointer; } '+
-            '#panel_USS .sw6 { position: absolute; top: 7px; right: 44px; cursor: pointer; '+
-            'box-shadow: 0 0 0 5px #fff; } '+
-            '#panel_USS .sw4 { margin: 0 8px 0 4px; width: auto; padding: 0 4px; cursor: pointer; '+
+            '#panel_USS .sw0 { margin-left: 4px; vertical-align: -4px; cursor: pointer; } '+
+            '#panel_USS .sw0 svg { width: 22px; height: 22px; } '+
+            '#panel_USS .sw1 { margin: 0 0 0 20px; width: auto; padding: 0 5px; cursor: pointer; '+
             'color: #333; } '+
-            '#panel_USS .sw5 { margin-left: 4px; vertical-align: -4px; cursor: pointer; } '+
-            '#panel_USS .sw5 svg { width: 22px; height: 22px; } '+
+            '.file_reader_USS { position: relative; z-index: 1; display: flex; align-items: center; '+
+            'padding: 0 15px; height: 40px; margin-bottom: 6px; color: #000; background: #fff; } '+
+            '#panel_USS .sw2 { height: 26px; width: 38px; cursor: pointer; } '+
+            '#panel_USS .sw3 { display: none; } '+
+            '#panel_USS .fname { font: normal 16px/24px Meiryo; margin: 0 12px; height: 21px; } '+
+            '#panel_USS .sw4 { position: absolute; top: 7px; right: 44px; cursor: pointer; '+
+            'box-shadow: 0 0 0 5px #fff; } '+
+            '#panel_USS .sw5 { position: absolute; top: 7px; right: 12px; cursor: pointer; } '+
 
             '#panel_USS .us_list { width: 440px; height: calc(100vh - 286px); '+
             'overflow-y: scroll; overflow-x: hidden; '+
@@ -165,17 +145,16 @@ function main(){
 
 
 
-
     function file_read(){
-        let sw1=document.querySelector('.file_reader_USS .sw1');
         let sw2=document.querySelector('.file_reader_USS .sw2');
-        sw1.onclick=()=>{
-            sw2.value=null; // 同じファイルの再読み込みを可能にする
-            sw2.click(); }
+        let sw3=document.querySelector('.file_reader_USS .sw3');
+        sw2.onclick=()=>{
+            sw3.value=null; // 同じファイルの再読み込みを可能にする
+            sw3.click(); }
 
-        sw2.addEventListener("change" , function(){
-            if(!(sw2.value)) return; // ファイルが選択されない場合
-            let file_list=sw2.files;
+        sw3.addEventListener("change" , function(){
+            if(!(sw3.value)) return; // ファイルが選択されない場合
+            let file_list=sw3.files;
             if(!file_list) return; // ファイルリストが選択されない場合
             let file=file_list[0];
             if(!file) return; // ファイルが無い場合
@@ -199,49 +178,7 @@ function main(){
                     tail=tail.substring(0, 5);
                     return full[0] +'　T'+ tail; }}}
 
-
-        let sw3=document.querySelector('#panel_USS .sw3');
-        if(sw3){
-            sw3.onclick=()=>{
-                nor_rev(); }}
-
-
-        let sw6=document.querySelector('#panel_USS .sw6');
-        if(sw6){
-            sw6.onclick=(event)=>{
-                if(event.ctrlKey){
-                    check_table(); } //「Ctrl+左Click」：ページの一覧表のスクリプト名のみをリスト表示
-                else{
-                    sort_name(); }}} //「左Click」：リストパネルをスクリプト名でソートする
-
-
-        let sw4=document.querySelector('#panel_USS .sw4');
-        if(sw4){
-            sw4.onclick=()=>{
-                let ok=confirm(
-                    '💢 現在のリストを「基準リスト」に設定しますか？\n'+
-                    '「基準リスト」はツール起動時に常に読み込まれ 最初の検索対象になります\n\n'+
-                    '　　●  「OK」➔ 基準リストに設定する\n'+
-                    '　　●  「キャンセル」➔ 設定しない');
-                if(ok){
-                    set_standerd();
-                }
-                else{ ; }}}
-
-
-        let sw5=document.querySelector('#panel_USS .sw5');
-        if(sw5){
-            sw5.onclick=()=>{
-                let ok=confirm(
-                    '💢 登録スクリプトの適用順をファイルから書き込みます\n\n'+
-                    '　　●  「OK」➔ 記事の適用順を更新する\n'+
-                    '　　●  「キャンセル」➔ 更新しない');
-                if(ok){
-                    set_table(); }
-                else{ ; }}}
-
     } //  file_read()
-
 
 
 
@@ -282,7 +219,6 @@ function main(){
 
 
 
-
     function disp_list(){
         let get=[]; // 初期化
         for(let k=0; k<raw_list.length; k++){
@@ -303,7 +239,6 @@ function main(){
             ul.insertAdjacentHTML('beforeend', li ); }
 
     } // disp_list()
-
 
 
 
@@ -357,12 +292,51 @@ function main(){
 
 
 
+    function work(){
+        let sw0=document.querySelector('#panel_USS .sw0');
+        if(sw0){
+            sw0.onclick=()=>{
+                let ok=confirm(
+                    '💢 登録スクリプトの適用順をファイルから書き込みます\n\n'+
+                    '　　●  「OK」➔ 記事の適用順を更新する\n'+
+                    '　　●  「キャンセル」➔ 更新しない');
+                if(ok){
+                    set_table(); }
+                else{ ; }}}
+
+
+        let sw1=document.querySelector('#panel_USS .sw1');
+        if(sw1){
+            sw1.onclick=()=>{
+                let panel=document.querySelector('#panel_USS');
+                if(panel){
+                    panel.remove(); }}}
+
+
+
+        let sw4=document.querySelector('#panel_USS .sw4');
+        if(sw4){
+            sw4.onclick=(event)=>{
+                if(event.ctrlKey){
+                    check_table(); } //「Ctrl+左Click」：ページの一覧表のスクリプト名のみをリスト表示
+                else{
+                    sort_name(); }}} //「左Click」：リストパネルをスクリプト名でソートする
+
+
+        let sw5=document.querySelector('#panel_USS .sw5');
+        if(sw5){
+            sw5.onclick=()=>{
+                nor_rev(); }}
+
+
+    } // work()
+
+
 
     function sort_name(){
         if(raw_list.length>1){
             raw_list.sort((a, b)=>a[1].localeCompare(b[1]));
             disp_list(); }}
-
 
 
 
@@ -389,19 +363,6 @@ function main(){
                     disp_list(); }}}
 
     } // nor_rev()
-
-
-
-
-    function set_standerd(){
-        let fname=document.querySelector('.file_reader_USS .fname');
-        if(fname){
-            let file_name=fname.textContent;
-            if(file_name.length>0){
-                localStorage.setItem('USList_name', file_name); }} // 参照バックアップファイル名 🔵
-
-    } // set_standerd()
-
 
 
 
